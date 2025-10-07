@@ -31,13 +31,20 @@ using Crockhead.Scripting;
 ## 문법
 상세 문법은 작성 예정입니다.
 
-### 기본 지원 문법
+### 기본 지원 문법 및 키워드
+- boolean, number, string, function, null 타입 지원.
+- +, -, *, /, % 연산 지원.
+- // 주석 지원.
+- " 문자열 지원.
 - var
+- null
+- true, false
 - function
+- return
 - for
-- continue / break
-- if / else if / else
-- switch / case
+- continue, break
+- if, else if, else
+- switch, case, default
 
 ### script.txt
 ~~~text
