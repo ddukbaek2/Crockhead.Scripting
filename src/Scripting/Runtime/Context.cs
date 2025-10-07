@@ -4,7 +4,7 @@ namespace Crockhead.Scripting
 	/// 표현식 객체가 평가시 변수 접근이나 함수 호출시 사용되는 컨텍스트.
 	/// <para>현재 스크립트 실행 주체와 표현식 객체를 간접적으로 연결하기 위한 설계적 용도.</para>
 	/// </summary>
-	public sealed class ExpressionContext
+	public sealed class Context
 	{
 		/// <summary>
 		/// 실행 주체.
@@ -19,7 +19,7 @@ namespace Crockhead.Scripting
 		/// <summary>
 		/// 생성됨.
 		/// </summary>
-		public ExpressionContext(Session session, Scope scope)
+		public Context(Session session, Scope scope)
 		{
 			m_Session = session;
 			m_Scope = scope;

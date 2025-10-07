@@ -27,7 +27,7 @@ namespace Crockhead.Scripting
 		/// <summary>
 		/// 평가.
 		/// </summary>
-		public Variable Evaluate(ExpressionContext context)
+		public Variable Evaluate(Context context)
 		{
 			var variable = Expression.Evaluate(context);
 			context.SetVariable(Name, variable);

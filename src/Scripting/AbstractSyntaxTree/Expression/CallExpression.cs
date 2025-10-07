@@ -30,7 +30,7 @@ namespace Crockhead.Scripting
 		/// <summary>
 		/// 평가.
 		/// </summary>
-		public Variable Evaluate(ExpressionContext context)
+		public Variable Evaluate(Context context)
 		{
 			var evaluatedVariables = new Variable[Arguments.Count];
 			for (var i = 0; i < Arguments.Count; ++i)

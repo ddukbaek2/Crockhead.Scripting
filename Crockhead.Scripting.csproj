@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<Version>0.0.2</Version>
+		<Version>0.0.3</Version>
 		<TargetFramework>netstandard2.1</TargetFramework>
 		<Nullable>disable</Nullable>
 		<ProduceReferenceAssembly>True</ProduceReferenceAssembly>
@@ -38,10 +38,6 @@
 
 	<ItemGroup>
 	  <PackageReference Include="Crockhead.Core" Version="0.0.13" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="src\Scripting\Function\" />
 	</ItemGroup>
 
 	<Target Name="RemoveAllPackages" BeforeTargets="Build;Pack">

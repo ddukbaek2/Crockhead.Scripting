@@ -36,7 +36,7 @@ namespace Crockhead.Scripting
 		/// <summary>
 		/// 평가.
 		/// </summary>
-		public Variable Evaluate(ExpressionContext context)
+		public Variable Evaluate(Context context)
 		{
 			var left = Left.Evaluate(context);
 			var right = Right.Evaluate(context);

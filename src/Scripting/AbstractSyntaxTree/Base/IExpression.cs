@@ -8,6 +8,6 @@ namespace Crockhead.Scripting
 		/// <summary>
 		/// 평가.
 		/// </summary>
-		Variable Evaluate(ExpressionContext context);
+		Variable Evaluate(Context context);
 	}
 }

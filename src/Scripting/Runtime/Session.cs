@@ -111,7 +111,7 @@ namespace Crockhead.Scripting
 			// 변수 선언 구문.
 			if (statement is VariableDeclarationStatement variableDeclaration)
 			{
-				var initialValue = variableDeclaration.Initializer != null ? variableDeclaration.Initializer.Evaluate(new ExpressionContext(this, scope)) : Variable.Null();
+				var initialValue = variableDeclaration.Initializer != null ? variableDeclaration.Initializer.Evaluate(new Context(this, scope)) : Variable.Null();
 				scope.SetLocalVariable(variableDeclaration.Name, initialValue);
 				return;
 			}
@@ -119,7 +119,7 @@ namespace Crockhead.Scripting
 			// 표현식 구문.
 			if (statement is ExpressionStatement expression)
 			{
-				expression.Expression.Evaluate(new ExpressionContext(this, scope));
+				expression.Expression.Evaluate(new Context(this, scope));
 				return;
 			}
 
@@ -129,7 +129,7 @@ namespace Crockhead.Scripting
 				var returnTrigger = default(ReturnTrigger);
 				if (returnStatement.Expression != null)
 				{
-					var variable = returnStatement.Expression.Evaluate(new ExpressionContext(this, scope));
+					var variable = returnStatement.Expression.Evaluate(new Context(this, scope));
 					returnTrigger = new ReturnTrigger(variable);
 				}
 				else
