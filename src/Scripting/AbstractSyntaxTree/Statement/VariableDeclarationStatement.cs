@@ -11,17 +11,17 @@ namespace Crockhead.Scripting
 		public string Name { get; }
 
 		/// <summary>
-		/// 표현식 프로퍼티.
+		/// 초기값 표현식 프로퍼티.
 		/// </summary>
-		public IExpression Initializer { get; }
+		public IExpression Expression { get; }
 
 		/// <summary>
 		/// 생성됨.
 		/// </summary>
-		public VariableDeclarationStatement(string name, IExpression initializer)
+		public VariableDeclarationStatement(string name, IExpression expression)
 		{
 			Name = name;
-			Initializer = initializer;
+			Expression = expression;
 		}
 	}
 }

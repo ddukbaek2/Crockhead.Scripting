@@ -10,15 +10,15 @@ namespace Crockhead.Scripting
 	/// 숫자.
 	/// <para>임의정밀 유리수.</para>
 	/// </summary>
-	public struct Number : IEquatable<Number>
+	public readonly struct Number : IEquatable<Number>
 	{
 		/// <summary>
-		/// 수 프로퍼티.
+		/// 분자 프로퍼티.
 		/// </summary>
 		public BigInteger Numerator { get; }
 
 		/// <summary>
-		/// 수 프로퍼티. (항상 > 0)
+		/// 분모 프로퍼티. (항상 > 0)
 		/// </summary>
 		public BigInteger Denominator { get; }
 
@@ -33,10 +33,14 @@ namespace Crockhead.Scripting
 		public Number(BigInteger numerator, BigInteger denominator)
 		{
 			if (denominator.IsZero) throw new DivideByZeroException();
-			if (denominator.Sign < 0) { numerator = BigInteger.Negate(numerator); denominator = BigInteger.Negate(denominator); }
-			var g = BigInteger.GreatestCommonDivisor(BigInteger.Abs(numerator), denominator);
-			Numerator = numerator / g;
-			Denominator = denominator / g;
+			if (denominator.Sign < 0)
+			{
+				numerator = BigInteger.Negate(numerator);
+				denominator = BigInteger.Negate(denominator);
+			}
+			var greatest = BigInteger.GreatestCommonDivisor(BigInteger.Abs(numerator), denominator);
+			Numerator = numerator / greatest;
+			Denominator = denominator / greatest;
 		}
 
 		/// <summary>
@@ -52,7 +56,12 @@ namespace Crockhead.Scripting
 		/// </summary>
 		public override bool Equals(object obj)
 		{
-			return obj is Number r && Equals(r);
+			if (obj is Number right)
+			{
+				return Equals(right);
+			}
+
+			return false;
 		}
 
 		/// <summary>
@@ -72,7 +81,7 @@ namespace Crockhead.Scripting
 		}
 
 		/// <summary>
-		/// 출력 가능한 문자열 변환.
+		/// 출력 문자열 변환.
 		/// </summary>
 		public string ToDisplayString(int maxDigits = 40)
 		{
@@ -83,6 +92,7 @@ namespace Crockhead.Scripting
 			var builder = new StringBuilder();
 			if (Numerator.Sign < 0)
 				builder.Append('-');
+
 			builder.Append(integer.ToString(CultureInfo.InvariantCulture));
 
 			if (remainder.IsZero)
@@ -123,15 +133,15 @@ namespace Crockhead.Scripting
 		/// <summary>
 		/// 정수로 생성.
 		/// </summary>
-		public static Number FromInteger(long value)
+		public static Number Parse(long value)
 		{
 			return new Number(new BigInteger(value), BigInteger.One);
 		}
 
 		/// <summary>
-		/// 문자열로 생성.
+		/// 소숫점이 존재하는 문자열로 생성.
 		/// </summary>
-		public static Number ParseDecimal(string text)
+		public static Number Parse(string text)
 		{
 			var dot = text.IndexOf('.');
 			if (dot < 0)
@@ -161,6 +171,22 @@ namespace Crockhead.Scripting
 			if (sign < 0)
 				numerator = BigInteger.Negate(numerator);
 			return new Number(numerator, scale);
+		}
+
+		/// <summary>
+		/// 비교 연산.
+		/// </summary>
+		public static bool operator ==(Number left, Number right)
+		{
+			return left.Equals(right);
+		}
+
+		/// <summary>
+		/// 비교 연산.
+		/// </summary>
+		public static bool operator !=(Number left, Number right)
+		{
+			return !(left == right);
 		}
 
 		/// <summary>

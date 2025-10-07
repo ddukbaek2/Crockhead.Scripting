@@ -48,14 +48,27 @@ namespace Crockhead.Scripting
 			}
 			else if (Type == ValueType.Boolean)
 			{
-				return ((BooleanValue)Value).Value ? Scripting.Number.FromInteger(1) : Scripting.Number.FromInteger(0);
+				return ((BooleanValue)Value).Value ? Scripting.Number.Parse(1) : Scripting.Number.Parse(0);
 			}
 			else if (Type == ValueType.String)
 			{
 				if (double.TryParse(Value.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out var value))
-					return Scripting.Number.ParseDecimal(value.ToString(CultureInfo.InvariantCulture));
+					return Scripting.Number.Parse(value.ToString(CultureInfo.InvariantCulture));
 			}
 			
+			throw new InvalidCastException();
+		}
+
+		/// <summary>
+		/// 함수 변환.
+		/// </summary>
+		public Function ToFunction()
+		{
+			if (Type == ValueType.Function)
+			{
+				return ((FunctionValue)Value).Value;
+			}
+
 			throw new InvalidCastException();
 		}
 
@@ -96,7 +109,7 @@ namespace Crockhead.Scripting
 		/// </summary>
 		public static Variable NumberFromLong(long value)
 		{
-			return new Variable(ValueType.Number, new NumberValue(Scripting.Number.FromInteger(value)));
+			return new Variable(ValueType.Number, new NumberValue(Scripting.Number.Parse(value)));
 		}
 
 		/// <summary>
@@ -105,7 +118,7 @@ namespace Crockhead.Scripting
 		public static Variable NumberFromDouble(double value)
 		{
 			var text = value.ToString(CultureInfo.InvariantCulture);
-			return new Variable(ValueType.Number, new NumberValue(Scripting.Number.ParseDecimal(text)));
+			return new Variable(ValueType.Number, new NumberValue(Scripting.Number.Parse(text)));
 		}
 
 		/// <summary>

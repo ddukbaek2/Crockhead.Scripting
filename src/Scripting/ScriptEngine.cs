@@ -37,7 +37,7 @@ namespace Crockhead.Scripting
 				Unload();
 
 			var parser = new Parser(script);
-			parser.Parse(out m_Functions);
+			parser.Parse(ref m_Functions);
 		}
 
 		/// <summary>
@@ -92,8 +92,9 @@ namespace Crockhead.Scripting
 			var diagnostics = new List<SyntaxDiagnostic>();
 			try
 			{
+				var functions = new Dictionary<string, FunctionDefinition>();
 				var parser = new Parser(script);
-				parser.Parse(out _);
+				parser.Parse(ref functions);
 			}
 			catch (SyntaxException exception)
 			{

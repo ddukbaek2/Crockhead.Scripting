@@ -22,13 +22,6 @@ namespace Crockhead.Scripting
 		/// <summary>
 		/// 생성됨.
 		/// </summary>
-		public Scope() : this(null)
-		{
-		}
-
-		/// <summary>
-		/// 생성됨.
-		/// </summary>
 		public Scope(Scope parent)
 		{
 			m_Variables = new Dictionary<string, Variable>();

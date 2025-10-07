@@ -1,21 +1,20 @@
 using System;
 using System.Collections.Generic;
 
-
 namespace Crockhead.Scripting
 {
 	/// <summary>
-	/// 스크립트 실행 흐름 주체.
+	/// 실행 세션.
 	/// </summary>
-	public class Session
+	public sealed class Session
 	{
 		/// <summary>
-		/// 바인딩 전역 함수 목록.
+		/// 바인딩 한 함수 목록.
 		/// </summary>
 		private readonly Dictionary<string, OnBindingFunctionDelegate> m_BindingFunctions;
 
 		/// <summary>
-		/// 전역 함수 목록.
+		/// 스크립트 함수 목록.
 		/// </summary>
 		private readonly Dictionary<string, FunctionDefinition> m_Functions;
 
@@ -31,25 +30,19 @@ namespace Crockhead.Scripting
 		{
 			m_BindingFunctions = bindingFunctions;
 			m_Functions = functions;
-			m_Scope = new Scope();
-
-			// 최상위 함수들을 전역에 바인딩. (전역 환경을 캡처)
-			foreach (var pair in m_Functions)
-			{
-				m_Scope.SetLocalVariable(pair.Key, Variable.Function(new Function(pair.Value, m_Scope)));
-			}
+			m_Scope = new Scope(null);
 		}
 
 		/// <summary>
-		/// 이름으로 함수 호출.
+		/// 함수 이름으로 호출.
 		/// </summary>
 		public Variable Call(string functionName, Variable[] parameters)
 		{
-			// 바인딩 된 함수 호출.
-			if (m_BindingFunctions.TryGetValue(functionName, out var function))
-				return function.Invoke(parameters);
+			// 바인딩된 C# 함수 호출.
+			if (m_BindingFunctions.TryGetValue(functionName, out var binding))
+				return binding.Invoke(parameters);
 
-			// 스크립트 전역 함수 호출.
+			// 스크립트 함수 호출.
 			if (m_Functions.TryGetValue(functionName, out var definition))
 				return Call(new Function(definition, m_Scope), parameters);
 
@@ -70,16 +63,17 @@ namespace Crockhead.Scripting
 		public Variable Call(Function function, Variable[] parameters)
 		{
 			var localScope = new Scope(function.CapturedScope);
-			var parameterCount = function.Definition.Parameters.Count;
-			for (var i = 0; i < parameterCount; i++)
+
+			// 인자 매핑.
+			var paramCount = function.Definition.Parameters.Count;
+			for (var i = 0; i < paramCount; i++)
 			{
-				var argumentValue = (i < parameters.Length) ? parameters[i] : Variable.Null();
-				localScope.SetLocalVariable(function.Definition.Parameters[i], argumentValue);
+				var argument = (i < parameters.Length) ? parameters[i] : Variable.Null();
+				localScope.SetLocalVariable(function.Definition.Parameters[i], argument);
 			}
 
 			try
 			{
-				// 현재 함수의 구문 목록 실행.
 				foreach (var statement in function.Definition.Body)
 				{
 					ExecuteStatement(localScope, statement);
@@ -90,7 +84,6 @@ namespace Crockhead.Scripting
 				return returnTrigger.Value ?? Variable.Null();
 			}
 
-			// 모든 함수는 반환값을 가지며, 지정하지 않으면 NullValue.
 			return Variable.Null();
 		}
 
@@ -99,49 +92,176 @@ namespace Crockhead.Scripting
 		/// </summary>
 		private void ExecuteStatement(Scope scope, IStatement statement)
 		{
-			// 함수 선언 구문.
-			if (statement is FunctionDeclarationStatement functionDeclaration)
+			// 함수 선언.
+			if (statement is FunctionDeclarationStatement funcDeclarationStatement)
 			{
-				var innerDefinition = new FunctionDefinition(functionDeclaration.Name, functionDeclaration.Parameters, functionDeclaration.Body);
-				var function = Variable.Function(new Function(innerDefinition, scope));
-				scope.SetLocalVariable(functionDeclaration.Name, function);
+				var functionDefinition = new FunctionDefinition(funcDeclarationStatement.Name, funcDeclarationStatement.Parameters, funcDeclarationStatement.Body);
+				var function = Variable.Function(new Function(functionDefinition, scope));
+				scope.SetLocalVariable(funcDeclarationStatement.Name, function);
 				return;
 			}
 
-			// 변수 선언 구문.
-			if (statement is VariableDeclarationStatement variableDeclaration)
+			// 변수 선언.
+			if (statement is VariableDeclarationStatement variableDeclarationStatement)
 			{
-				var initialValue = variableDeclaration.Initializer != null ? variableDeclaration.Initializer.Evaluate(new Context(this, scope)) : Variable.Null();
-				scope.SetLocalVariable(variableDeclaration.Name, initialValue);
+				var value = variableDeclarationStatement.Expression != null
+					? variableDeclarationStatement.Expression.Evaluate(new Context(this, scope))
+					: Variable.Null();
+				scope.SetLocalVariable(variableDeclarationStatement.Name, value);
 				return;
 			}
 
-			// 표현식 구문.
-			if (statement is ExpressionStatement expression)
+			// 표현식.
+			if (statement is ExpressionStatement expressionStatement)
 			{
-				expression.Expression.Evaluate(new Context(this, scope));
+				expressionStatement.Expression.Evaluate(new Context(this, scope));
 				return;
 			}
 
-			// 반환 구문.
+			// 반환문.
 			if (statement is ReturnStatement returnStatement)
 			{
-				var returnTrigger = default(ReturnTrigger);
-				if (returnStatement.Expression != null)
-				{
-					var variable = returnStatement.Expression.Evaluate(new Context(this, scope));
-					returnTrigger = new ReturnTrigger(variable);
-				}
-				else
-				{
-					var variable = Variable.Null();
-					returnTrigger = new ReturnTrigger(variable);
-				}
-
-				throw returnTrigger;
+				var returnVariable = returnStatement.Expression != null
+					? returnStatement.Expression.Evaluate(new Context(this, scope))
+					: Variable.Null();
+				throw new ReturnTrigger(returnVariable);
 			}
 
+			// 조건문.
+			if (statement is IfStatement ifStatement)
+			{
+				var context = new Context(this, scope);
+
+				if (ifStatement.Condition.Evaluate(context).ToBoolean())
+				{
+					foreach (var thenStatement in ifStatement.Then)
+					{
+						ExecuteStatement(scope, thenStatement);
+					}
+
+					return;
+				}
+
+				foreach (var (cond, body) in ifStatement.ElseIf)
+				{
+					if (cond.Evaluate(context).ToBoolean())
+					{
+						foreach (var bodyStatement in body)
+						{
+							ExecuteStatement(scope, bodyStatement);
+						}
+
+						return;
+					}
+				}
+
+				if (ifStatement.Else != null)
+				{
+					foreach (var bodyStatement in ifStatement.Else)
+					{
+						ExecuteStatement(scope, bodyStatement);
+					}
+				}
+				return;
+			}
+
+			// for.
+			if (statement is ForStatement forStatement)
+			{
+				var loopScope = new Scope(scope);
+
+				if (forStatement.Initializer != null)
+					ExecuteStatement(loopScope, forStatement.Initializer);
+
+				while (true)
+				{
+					var condition = forStatement.Condition != null ? forStatement.Condition.Evaluate(new Context(this, loopScope)).ToBoolean() : true;
+					if (!condition)
+						break;
+
+					try
+					{
+						foreach (var bodyStatement in forStatement.Body)
+							ExecuteStatement(loopScope, bodyStatement);
+					}
+					catch (ContinueTrigger)
+					{
+						// continue → 다음 반복으로
+					}
+					catch (BreakTrigger)
+					{
+						break;
+					}
+
+					// 루프가 끝나기전에 처리.
+					if (forStatement.Post != null)
+					{
+						forStatement.Post.Evaluate(new Context(this, loopScope));
+					}
+				}
+				return;
+			}
+
+			// switch.
+			if (statement is SwitchStatement switchStmt)
+			{
+				var ctx = new Context(this, scope);
+				var value = switchStmt.Expression.Evaluate(ctx);
+
+				bool matched = false;
+				foreach (var (label, body) in switchStmt.Cases)
+				{
+					if (matched || ValuesEqual(value, label.Evaluate(ctx)))
+					{
+						matched = true;
+						try
+						{
+							foreach (var st in body)
+								ExecuteStatement(scope, st);
+						}
+						catch (BreakTrigger)
+						{
+							break;
+						}
+					}
+				}
+
+				if (!matched && switchStmt.DefaultBody != null)
+				{
+					foreach (var st in switchStmt.DefaultBody)
+						ExecuteStatement(scope, st);
+				}
+				return;
+			}
+
+			// break.
+			if (statement is BreakStatement)
+				throw new BreakTrigger();
+
+			// continue.
+			if (statement is ContinueStatement)
+				throw new ContinueTrigger();
+
 			throw new Exception("지원하지 않는 문장");
+		}
+
+		/// <summary>
+		/// switch-case 비교용 헬퍼.
+		/// </summary>
+		private static bool ValuesEqual(Variable a, Variable b)
+		{
+			if (a.Type != b.Type)
+				return false;
+
+			switch (a.Type)
+			{
+				case ValueType.Null: return true;
+				case ValueType.Boolean: return a.ToBoolean() == b.ToBoolean();
+				case ValueType.Number: return a.ToNumber() == b.ToNumber();
+				case ValueType.String: return a.ToString() == b.ToString();
+				case ValueType.Function: return a.ToFunction() == b.ToFunction();
+				default: return false;
+			}
 		}
 	}
 }

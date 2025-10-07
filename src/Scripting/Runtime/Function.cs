@@ -23,5 +23,18 @@ namespace Crockhead.Scripting
 			Definition = definition;
 			CapturedScope = capturedScope;
 		}
+
+		/// <summary>
+		/// 동일 여부 반환.
+		/// </summary>
+		public override bool Equals(object obj)
+		{
+			if (obj is Function function)
+			{
+				return Definition.Name == function.Definition.Name;
+			}
+
+			return base.Equals(obj);
+		}
 	}
 }

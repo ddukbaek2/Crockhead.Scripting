@@ -124,12 +124,12 @@ namespace Crockhead.Scripting
 
 			while (true)
 			{
-				var c = Peek();
-				if (char.IsDigit(c))
+				var ch = Peek();
+				if (char.IsDigit(ch))
 				{
 					Advance();
 				}
-				else if (c == '.' && !hasDot)
+				else if (ch == '.' && !hasDot)
 				{
 					hasDot = true; Advance();
 				}
