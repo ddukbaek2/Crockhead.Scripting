@@ -30,6 +30,15 @@ using Crockhead.Scripting;
 
 ## 문법
 상세 문법은 작성 예정입니다.
+
+### 기본 지원 문법
+- var
+- function
+- for
+- continue / break
+- if / else if / else
+- switch / case
+
 ### script.txt
 ~~~text
 // 주석.
