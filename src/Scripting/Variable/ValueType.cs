@@ -1,7 +1,7 @@
 namespace Crockhead.Scripting
 {
 	/// <summary>
-	/// 값 타입.
+	/// 값의 종류.
 	/// </summary>
 	public enum ValueType
 	{

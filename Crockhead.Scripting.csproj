@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<Version>0.0.1</Version>
+		<Version>0.0.2</Version>
 		<TargetFramework>netstandard2.1</TargetFramework>
 		<Nullable>disable</Nullable>
 		<ProduceReferenceAssembly>True</ProduceReferenceAssembly>
@@ -13,7 +13,7 @@
 		<AssemblyName>$(PackageId)</AssemblyName>
 		<Company>Crockhead Studio</Company>
 		<Authors>ddukbaek2</Authors>
-		<Description></Description>
+		<Description>Lightweight scripting engine for .NET Standard 2.1 with a simple syntax and stack-based execution model. Supports function binding between C# and script code with no external dependencies.</Description>
 		<RepositoryType>git</RepositoryType>
 		<RepositoryUrl>https://github.com/ddukbaek2/Crockhead.Scripting.git</RepositoryUrl>
 		<!-- <PackageLicenseExpression>MIT</PackageLicenseExpression> -->
@@ -38,6 +38,10 @@
 
 	<ItemGroup>
 	  <PackageReference Include="Crockhead.Core" Version="0.0.13" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="src\Scripting\Function\" />
 	</ItemGroup>
 
 	<Target Name="RemoveAllPackages" BeforeTargets="Build;Pack">
