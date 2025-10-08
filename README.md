@@ -28,14 +28,16 @@ Install-Package Crockhead.Scripting
 using Crockhead.Scripting;
 ~~~
 
-## 문법
-상세 문법은 작성 예정입니다.
+### 기본 지원 문법
+- 기본 타입 지원. (boolean, number, string, function, null)
+- 수식, 비교 연산자 지원.
+- 주석 지원. (//)
+- 리터럴 문자열 지원. ("str")
+- 다중 지역 함수 지원.
+- 구조체 지원. (struct)
+- 타입 힌팅 옵션 지원. (var num = 0; or var num: Number = 0;)
 
-### 기본 지원 문법 및 키워드
-- boolean, number, string, function, null 타입 지원.
-- +, -, *, /, % 연산 지원.
-- // 주석 지원.
-- " 문자열 지원.
+### 키워드
 - var
 - null
 - true, false
@@ -43,8 +45,13 @@ using Crockhead.Scripting;
 - return
 - for
 - continue, break
-- if, else if, else
+- if, else if, else, or, and
 - switch, case, default
+- struct
+
+## 연산자
+- 수식연산자: +-*/%=
+- 비교연산자: ==, !=, <, >, <=, >=, !
 
 ### script.txt
 ~~~text
