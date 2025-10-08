@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 
 
@@ -107,7 +108,7 @@ namespace Crockhead.Scripting
 		/// <summary>
 		/// 숫자 생성.
 		/// </summary>
-		public static Variable NumberFromLong(long value)
+		public static Variable Number(long value)
 		{
 			return new Variable(ValueType.Number, new NumberValue(Scripting.Number.Parse(value)));
 		}
@@ -115,7 +116,7 @@ namespace Crockhead.Scripting
 		/// <summary>
 		/// 숫자 생성.
 		/// </summary>
-		public static Variable NumberFromDouble(double value)
+		public static Variable Number(double value)
 		{
 			var text = value.ToString(CultureInfo.InvariantCulture);
 			return new Variable(ValueType.Number, new NumberValue(Scripting.Number.Parse(text)));
@@ -135,6 +136,22 @@ namespace Crockhead.Scripting
 		public static Variable Function(Function value)
 		{
 			return new Variable(ValueType.Function, new FunctionValue(value));
+		}
+
+		/// <summary>
+		/// 구조체 생성.
+		/// </summary>
+		public static Variable StructType(string name, List<string> fields, Dictionary<string, FunctionDefinition> methods)
+		{
+			return new Variable(ValueType.StructType, new StructTypeValue(name, fields, methods));
+		}
+
+		/// <summary>
+		/// 구조체 생성.
+		/// </summary>
+		public static Variable Struct(string name, Dictionary<string, Variable> fields)
+		{
+			return new Variable(ValueType.Struct, new StructValue(name, fields));
 		}
 	}
 }

@@ -62,11 +62,22 @@ namespace Crockhead.Scripting
 		/// </summary>
 		public Variable Call(Function function, Variable[] parameters)
 		{
+			return Call(Variable.Null(), function, parameters);
+		}
+
+		/// <summary>
+		/// 함수 호출.
+		/// </summary>
+		public Variable Call(Variable targetVariable, Function function, Variable[] parameters)
+		{
 			var localScope = new Scope(function.CapturedScope);
 
+			if (targetVariable.Type == ValueType.Struct)
+				localScope.SetLocalVariable("this", targetVariable);
+
 			// 인자 매핑.
-			var paramCount = function.Definition.Parameters.Count;
-			for (var i = 0; i < paramCount; i++)
+			var parameterCount = function.Definition.Parameters.Count;
+			for (var i = 0; i < parameterCount; i++)
 			{
 				var argument = (i < parameters.Length) ? parameters[i] : Variable.Null();
 				localScope.SetLocalVariable(function.Definition.Parameters[i], argument);
@@ -131,7 +142,6 @@ namespace Crockhead.Scripting
 			if (statement is IfStatement ifStatement)
 			{
 				var context = new Context(this, scope);
-
 				if (ifStatement.Condition.Evaluate(context).ToBoolean())
 				{
 					foreach (var thenStatement in ifStatement.Then)
@@ -169,7 +179,6 @@ namespace Crockhead.Scripting
 			if (statement is ForStatement forStatement)
 			{
 				var loopScope = new Scope(scope);
-
 				if (forStatement.Initializer != null)
 					ExecuteStatement(loopScope, forStatement.Initializer);
 
@@ -203,15 +212,14 @@ namespace Crockhead.Scripting
 			}
 
 			// switch.
-			if (statement is SwitchStatement switchStmt)
+			if (statement is SwitchStatement switchStatement)
 			{
-				var ctx = new Context(this, scope);
-				var value = switchStmt.Expression.Evaluate(ctx);
-
-				bool matched = false;
-				foreach (var (label, body) in switchStmt.Cases)
+				var context = new Context(this, scope);
+				var value = switchStatement.Expression.Evaluate(context);
+				var matched = false;
+				foreach (var (label, body) in switchStatement.Cases)
 				{
-					if (matched || ValuesEqual(value, label.Evaluate(ctx)))
+					if (matched || ValuesEquals(value, label.Evaluate(context)))
 					{
 						matched = true;
 						try
@@ -226,9 +234,9 @@ namespace Crockhead.Scripting
 					}
 				}
 
-				if (!matched && switchStmt.DefaultBody != null)
+				if (!matched && switchStatement.DefaultBody != null)
 				{
-					foreach (var st in switchStmt.DefaultBody)
+					foreach (var st in switchStatement.DefaultBody)
 						ExecuteStatement(scope, st);
 				}
 				return;
@@ -242,24 +250,39 @@ namespace Crockhead.Scripting
 			if (statement is ContinueStatement)
 				throw new ContinueTrigger();
 
+			// type.
+			if (statement is StructTypeDeclarationStatement structTypeDeclarationStatement)
+			{
+				var fields = new List<string>();
+				foreach (var field in structTypeDeclarationStatement.Fields) fields.Add(field.FieldName);
+				var typeVariable = Variable.StructType(structTypeDeclarationStatement.Name, fields, structTypeDeclarationStatement.Methods);
+				scope.SetLocalVariable(structTypeDeclarationStatement.Name, typeVariable);
+				return;
+			}
+
 			throw new Exception("지원하지 않는 문장");
 		}
 
 		/// <summary>
 		/// switch-case 비교용 헬퍼.
 		/// </summary>
-		private static bool ValuesEqual(Variable a, Variable b)
+		private static bool ValuesEquals(Variable left, Variable right)
 		{
-			if (a.Type != b.Type)
+			if (left.Type != right.Type)
 				return false;
 
-			switch (a.Type)
+			switch (left.Type)
 			{
-				case ValueType.Null: return true;
-				case ValueType.Boolean: return a.ToBoolean() == b.ToBoolean();
-				case ValueType.Number: return a.ToNumber() == b.ToNumber();
-				case ValueType.String: return a.ToString() == b.ToString();
-				case ValueType.Function: return a.ToFunction() == b.ToFunction();
+				case ValueType.Null:
+					return true;
+				case ValueType.Boolean:
+					return left.ToBoolean() == right.ToBoolean();
+				case ValueType.Number:
+					return left.ToNumber() == right.ToNumber();
+				case ValueType.String:
+					return left.ToString() == right.ToString();
+				case ValueType.Function:
+					return left.ToFunction() == right.ToFunction();
 				default: return false;
 			}
 		}

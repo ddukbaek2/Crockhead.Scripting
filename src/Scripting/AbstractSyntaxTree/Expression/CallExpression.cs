@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Crockhead.Scripting
 {
 	/// <summary>
-	/// 호출 표현식.
+	/// 함수 호출 표현식.
 	/// </summary>
 	public sealed class CallExpression : IExpression
 	{

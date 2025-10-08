@@ -140,22 +140,38 @@ namespace Crockhead.Scripting
 			if (m_Token.Type == TokenType.Keyword && m_Token.Value == "var")
 			{
 				Next();
-				
+
 				var name = ExpectIdentifier();
-				expression = null;
+
+				// [추가] 선택적 타입 명시: var name : Type = expr;
+				var type = string.Empty;
+				if (IsSymbol(":"))
+				{
+					Next();
+					type = ExpectIdentifier();
+				}
+
+				IExpression initializer = null;
 				if (IsSymbol("="))
 				{
 					Next();
-					expression = ParseExpression();
+					initializer = ParseExpression();
 				}
+
 				ExpectSymbol(";");
-				return new VariableDeclarationStatement(name, expression);
+
+				// [추가] 타입 명시가 있는 경우 TypedVariableDeclarationStatement 사용
+				if (!string.IsNullOrEmpty(type))
+					return new TypedVariableDeclarationStatement(name, type, initializer);
+
+				return new VariableDeclarationStatement(name, initializer);
 			}
 
+			// return.
 			if (m_Token.Type == TokenType.Keyword && m_Token.Value == "return")
 			{
 				Next();
-				
+
 				expression = null;
 				if (!IsSymbol(";"))
 					expression = ParseExpression();
@@ -163,7 +179,28 @@ namespace Crockhead.Scripting
 				return new ReturnStatement(expression);
 			}
 
+			// 일반 표현식 문.
 			expression = ParseExpression();
+
+			// [추가] 좌변이 멤버 접근일 때 대입 지원 (obj.field = expr)
+			if (IsSymbol("="))
+			{
+				if (expression is VariableExpression variableExpression)
+				{
+					Next();
+					var right = ParseExpression();
+					ExpectSymbol(";");
+					return new ExpressionStatement(new AssignmentExpression(variableExpression.Name, right));
+				}
+				if (expression is MemberAccessExpression memberAccess)
+				{
+					Next();
+					var right = ParseExpression();
+					ExpectSymbol(";");
+					return new ExpressionStatement(new MemberAssignmentExpression(memberAccess, right));
+				}
+			}
+
 			ExpectSymbol(";");
 			return new ExpressionStatement(expression);
 		}
@@ -348,11 +385,12 @@ namespace Crockhead.Scripting
 		private IExpression ParseExpression()
 		{
 			var left = ParseAddSub();
-			if (left is VariableExpression variableExpression && IsSymbol("="))
-			{
+			if (IsSymbol("=")) {
+				if (left is VariableExpression variableExpression) {
 				Next();
 				var right = ParseExpression();
-				return new AssignmentExpression(variableExpression.Name, right);
+				return new AssignmentExpression(variableExpression.Name, right); }
+				if (left is MemberAccessExpression memberAccess) { Next(); var right = ParseExpression(); return new MemberAssignmentExpression(memberAccess, right); }
 			}
 			return left;
 		}
@@ -378,12 +416,12 @@ namespace Crockhead.Scripting
 		/// </summary>
 		private IExpression ParseMulDivMod()
 		{
-			var left = ParsePrimary();
+			var left = ParsePostfix();
 			while (m_Token.Type == TokenType.Symbol && (m_Token.Value == "*" || m_Token.Value == "/" || m_Token.Value == "%"))
 			{
 				var op = m_Token.Value;
 				Next();
-				var right = ParsePrimary();
+				var right = ParsePostfix();
 				left = new BinaryExpression(left, right, op);
 			}
 			return left;
@@ -420,6 +458,7 @@ namespace Crockhead.Scripting
 				Next();
 				var expression = ParseExpression();
 				ExpectSymbol(")");
+
 				return expression;
 			}
 
@@ -449,6 +488,46 @@ namespace Crockhead.Scripting
 			}
 
 			throw new SyntaxException(m_Token.Line, m_Token.Column, "유효하지 않은 표현식");
+		}
+
+		/// <summary>
+		/// 후수정 해석.
+		/// </summary>
+		private IExpression ParsePostfix()
+		{
+			var expression = ParsePrimary();
+
+			// 멤버 접근 체이닝.
+			while (m_Token.Type == TokenType.Symbol && m_Token.Value == ".")
+			{
+				Next();
+
+				var name = ExpectIdentifier();
+				expression = new MemberAccessExpression(expression, name);
+			}
+
+			// 호출 체이닝.
+			while (m_Token.Type == TokenType.Symbol && m_Token.Value == "(")
+			{
+				Next();
+
+				var arguments = new List<IExpression>();
+				if (!IsSymbol(")"))
+				{
+					arguments.Add(ParseExpression());
+					
+					while (IsSymbol(","))
+					{
+						Next();
+
+						arguments.Add(ParseExpression());
+					}
+				}
+				ExpectSymbol(")");
+				expression = new InvokeExpression(expression, arguments);
+			}
+
+			return expression;
 		}
 	}
 }

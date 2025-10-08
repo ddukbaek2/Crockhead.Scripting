@@ -6,7 +6,7 @@ namespace Crockhead.Scripting
 	public interface IExpression
 	{
 		/// <summary>
-		/// 평가.
+		/// 평가. (실행)
 		/// </summary>
 		Variable Evaluate(Context context);
 	}

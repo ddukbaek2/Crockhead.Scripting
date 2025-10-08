@@ -17,6 +17,16 @@ namespace Crockhead.Scripting
 		private readonly Scope m_Scope;
 
 		/// <summary>
+		/// 실행 주체 프로퍼티.
+		/// </summary>
+		public Session Session => m_Session;
+
+		/// <summary>
+		/// 현재 영역 프로퍼티.
+		/// </summary>
+		public Scope Scope => m_Scope;
+
+		/// <summary>
 		/// 생성됨.
 		/// </summary>
 		public Context(Session session, Scope scope)
@@ -46,6 +56,13 @@ namespace Crockhead.Scripting
 		/// </summary>
 		public bool TryGetVariable(string name, out Variable variable)
 		{
+			// 암시적 this 멤버 탐색
+			if (m_Scope.TryGetVariable("this", out var __this) && __this.Type == ValueType.Struct)
+			{
+				var __sv = (StructValue)__this.Value;
+				if (__sv.Fields.TryGetValue(name, out variable)) return true;
+			}
+
 			return m_Scope.TryGetVariable(name, out variable);
 		}
 
@@ -60,6 +77,22 @@ namespace Crockhead.Scripting
 				return m_Session.Call(functionValue.Value, parameters);
 			}
 			return m_Session.Call(name, parameters);
+		}
+
+		/// <summary>
+		/// 함수 호출.
+		/// </summary>
+		public Variable Call(Function function, Variable[] parameters)
+		{
+			return m_Session.Call(function, parameters);
+		}
+
+		/// <summary>
+		/// 함수 호출. (객체를 통한 메서드 호출)
+		/// </summary>
+		public Variable Call(Variable targetVariable, Function function, Variable[] parameters)
+		{
+			return m_Session.Call(targetVariable, function, parameters);
 		}
 	}
 }

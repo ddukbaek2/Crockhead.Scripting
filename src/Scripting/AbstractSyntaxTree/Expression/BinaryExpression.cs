@@ -43,22 +43,28 @@ namespace Crockhead.Scripting
 			if (Operator == "+" && (left.Type == ValueType.String || right.Type == ValueType.String))
 				return Variable.String(left.ToString() + right.ToString());
 
-			var leftIsNumberLike = left.Type == ValueType.Number || left.Type == ValueType.Boolean;
-			var rightIsNumberLike = right.Type == ValueType.Number || right.Type == ValueType.Boolean;
-			if (!leftIsNumberLike || !rightIsNumberLike)
+			var leftIsNumber = left.Type == ValueType.Number || left.Type == ValueType.Boolean;
+			var rightIsNumber = right.Type == ValueType.Number || right.Type == ValueType.Boolean;
+			if (!leftIsNumber || !rightIsNumber)
 				throw new Exception($"연산자 '{Operator}' 는 NumberValue 타입에만 허용됩니다.");
 
-			var a = left.ToNumber();
-			var b = right.ToNumber();
+			var leftNumber = left.ToNumber();
+			var rightNumber = right.ToNumber();
 
 			switch (Operator)
 			{
-				case "+": return Variable.Number(a + b);
-				case "-": return Variable.Number(a - b);
-				case "*": return Variable.Number(a * b);
-				case "/": return Variable.Number(a / b);
-				case "%": return Variable.Number(Number.Remainder(a, b));
-				default: throw new Exception($"지원하지 않는 연산자 '{Operator}'");
+				case "+":
+					return Variable.Number(leftNumber + rightNumber);
+				case "-":
+					return Variable.Number(leftNumber - rightNumber);
+				case "*":
+					return Variable.Number(leftNumber * rightNumber);
+				case "/":
+					return Variable.Number(leftNumber / rightNumber);
+				case "%":
+					return Variable.Number(Number.Remainder(leftNumber, rightNumber));
+				default:
+					throw new Exception($"지원하지 않는 연산자 '{Operator}'");
 			}
 		}
 	}

@@ -29,5 +29,14 @@ namespace Crockhead.Scripting
 		/// 함수.
 		/// </summary>
 		Function,
+
+		/// <summary>
+		/// 구조체 타입.
+		/// </summary>
+		StructType,
+		/// <summary>
+		/// 구조체 인스턴스.
+		/// </summary>
+		Struct,
 	}
 }
