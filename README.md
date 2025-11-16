@@ -49,42 +49,128 @@ using Crockhead.Scripting;
 
 
 ### 기본 지원 문법
-- 기본 타입 지원. (boolean, number, string, function, null)
-- 수식 연산자 지원.
-- 비교 연산자 지원.
-- 주석 지원. (//)
-- 리터럴 문자열 지원. ("str")
-- 다중 지역 함수 지원.
-- 구조체 지원. (struct)
-- 호출식 지원. (변수();)
-- 타입 힌팅 옵션 지원. (var num = 0; or var num: Number = 0;)
+- 키워드
+	- var
+	- if
+	- else
+	- or (||)
+	- and (&&)
+	- for
+	- continue
+	- break
+	- switch
+	- case
+	- default
+	- null
+	- true
+	- false
+	- struct
+	- function
 
-### 키워드
-- var
-- null
-- true, false
+- 수식 연산자
+	- +, -, *, /, %
+- 비교 연산자
+	- ==, !=, !{var}, &&, ||
+- 주석
+	- //
+- 리터럴.
+	- var flag = true; 
+	- var num = 1.5;
+	- var str = "abc";
+	- var arr = [1,2,3,4,5];
+	- var tuple = (1, "abc");
+- 계층적 구조체, 함수 정의.
+	- 호출식
+		- 변수();
+- 타입 힌팅. (옵션)
+	- var num = 0;
+	- var num: Number = 0;
+
+## 값 타입 (대입시 복사)
+- number: 숫자. (리터럴로 대입 생성, 정수와 실수 통합, 대역폭 무제한, 수식 연산자에 의해 값을 만들어 다시 대입)
+- boolean: 논리. (리터럴로 대입 생성, true, false, 논리 연산자에 의한 비교문 기능)
+- string: 문자열. (리터럴로 대입 생성, 길이 고정, 논리 연산자에 의한 문자열 조작 기능)
+- array: 배열. (리터럴로 대입 생성, 길이 고정, 색인 연산자에 의한 요소 접근 기능)
+- tuple: 튜플. (리터럴로 대입 생성, 요소 갯수 고정, 색인 연산자에 의한 요소 접근 기능)
+
+## 선언타입 (스크립트 선언)
 - function
-- return
-- for
-- continue, break
-- if, else if, else, or, and
-- switch, case, default
-- struct, this
+- struct
 
-## 변수의 값 타입
-- Null
-- Number
-- Boolean
-- String
-- Function
-- Struct
+## 참조 타입 (대입시 참조)
+- callable: 함수 객체. (호출식을 참조하는 객체)
+- objectable: 구조체 객체. (정의된 구조체 틀로 할당된 객체를 참조하는 객체)
+- nullable: 변수 무효화 객체. (대입된 변수를 null로 재할당하여 내부의 원래 값을 무효화, 실제 할당된 값과 객체는 스코프 벗어나기전까지 스코프에 존재)
+
+## 구조체 기반 타입 (참조 타입과 동일)
+- System.Collections.Dictionary
+- System.Collections.List
+- System.Collections.LinkedList
+- System.Collections.Set
+- System.Collections.Queue
+- System.Collections.Stack
+- System.Collections.String
+	- Length()
+ 	- Clear()
+	- Set(var str: string)
+	- At()
+ 	- Get() -> String:
+	- GetRange(var start: number, var end: number) -> String:
+	- Add(var str: String)
+	- Subtract(var other: String) -> String:
+	- Replace()
+	- Remove()
+	- Join()
+
 
 ## 연산자
 - 수식연산자: +-*/%=
-- 비교연산자: ==, !=, <, >, <=, >=, !
+- 비교연산자: ==, !=, <, >, <=, >=, !, &&, ||
+
+## 스크립트 특징
+- static, const 구조체, 변수, 함수 없음.
+- 모든 변수는 형변환 없음.
+- 모든 변수는 할당을 위해 명시적 선언 필요. (var num = 0;)
+- 모든 변수는 스택메모리로서 할당 된 스코프를 벗어나면 제거. (참조카운팅 개념 없음, 필요시 복제)   
+- 값타입은 리터럴 생성. (숫자, 논리, 문자열, 배열) 
+- 값타입은 대입시 암시적으로 값 복사. (참조로 사용할 방법은 없음)
+- 참조타입은 대입시 암시적 참조. (명시적 복제 함수 호출을 통해 값타입처럼 복제 가능)
+- 구조체 안에 구조체를 계층적으로 정의 가능.   
+- 구조체에 상속 기능 없음. (원본과 사본의 개념으로 확장 예정)
+- 구조체에 생성자 함수는 존재하지만 초기화 타이밍을 위한 것이며, 복사생성자는 지원하지 않으므로 인자는 넣을 수 없음.
+- 구조체는 퍼미션을 지원하지 않음. 모든 멤버는 public 접근 가능.
+- 함수 안의 함수를 계층적으로 정의 가능. (하위 스코프이므로 상위 스코프 변수 접근 가능)   
+- 함수는 무조건 반환이 존재. (명시적 반환이 없을 경우 null 반환)
+- 함수에서 순서적 파라메터 외에 이름으로 지정 사용 가능. (인자가 일부 누락되어도 호출이 가능)
+- 함수의 이름 오버로딩을 지원하지 않음.
+- 스크립트 실행은 반드시 최상위 계층 함수 호출로 시작 필요.  
+- 스크립트는 동적 로딩이 전제로 이미 로드된 스크립트 내에서 해석하므로 파일 단위의 include, using 등의 지시문 사용하지 않음.   
+- 스크립트에서 런타임 등록된 함수 호출.
+- 스크립트 추가 로딩을 통한 확장 가능. (구조체 선언 스코프를 동일하게 가져갈 경우 머지되고 멤버의 이름이 같을 경우 덮어 씀, 네임스페이스 처럼 사용 가능)
+
+## 지원 예정
+- 함수의 필수 인자에 대한 required 키워드
+- try catch finally 키워드 지원
+- call()
+- clone()
+- hash()
+- enum
+- dictionary
+- 연산자 오버로딩
 
 ### script.txt
 ~~~text
+struct Application
+{
+	var arr = [1, 2, 3, 4, 5]
+
+	struct Application
+	{
+		function Application()
+		{
+		}
+	}
+}
 
 function doSomething() {
 	var num = (1 + 2) * 5 - 3; // 숫자는 실수와 정수를 구분하지 않고 자릿수는 무제한.

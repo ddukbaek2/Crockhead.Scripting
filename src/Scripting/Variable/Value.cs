@@ -1,3 +1,4 @@
+using Crockhead.Core;
 using System;
 
 
@@ -24,6 +25,14 @@ namespace Crockhead.Scripting
 		/// 논리 타입 변환.
 		/// </summary>
 		public virtual bool ToBoolean()
+		{
+			throw new InvalidOperationException();
+		}
+		
+		/// <summary>
+		/// 숫자 타입 변환.
+		/// </summary>
+		public virtual Number ToNumber()
 		{
 			throw new InvalidOperationException();
 		}

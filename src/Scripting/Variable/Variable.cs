@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Crockhead.Core;
 
 
 namespace Crockhead.Scripting
@@ -49,12 +50,12 @@ namespace Crockhead.Scripting
 			}
 			else if (Type == ValueType.Boolean)
 			{
-				return ((BooleanValue)Value).Value ? Scripting.Number.Parse(1) : Scripting.Number.Parse(0);
+				return ((BooleanValue)Value).Value ? Crockhead.Core.Number.Parse(1) : Crockhead.Core.Number.Parse(0);
 			}
 			else if (Type == ValueType.String)
 			{
 				if (double.TryParse(Value.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out var value))
-					return Scripting.Number.Parse(value.ToString(CultureInfo.InvariantCulture));
+					return Crockhead.Core.Number.Parse(value.ToString(CultureInfo.InvariantCulture));
 			}
 			
 			throw new InvalidCastException();
@@ -110,7 +111,7 @@ namespace Crockhead.Scripting
 		/// </summary>
 		public static Variable Number(long value)
 		{
-			return new Variable(ValueType.Number, new NumberValue(Scripting.Number.Parse(value)));
+			return new Variable(ValueType.Number, new NumberValue(Crockhead.Core.Number.Parse(value)));
 		}
 
 		/// <summary>
@@ -119,7 +120,7 @@ namespace Crockhead.Scripting
 		public static Variable Number(double value)
 		{
 			var text = value.ToString(CultureInfo.InvariantCulture);
-			return new Variable(ValueType.Number, new NumberValue(Scripting.Number.Parse(text)));
+			return new Variable(ValueType.Number, new NumberValue(Crockhead.Core.Number.Parse(text)));
 		}
 
 		/// <summary>

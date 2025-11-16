@@ -1,3 +1,4 @@
+using Crockhead.Core;
 using System;
 
 
@@ -62,7 +63,7 @@ namespace Crockhead.Scripting
 				case "/":
 					return Variable.Number(leftNumber / rightNumber);
 				case "%":
-					return Variable.Number(Number.Remainder(leftNumber, rightNumber));
+					return Variable.Number(leftNumber % rightNumber);
 				default:
 					throw new Exception($"지원하지 않는 연산자 '{Operator}'");
 			}

@@ -7,6 +7,11 @@ namespace Crockhead.Scripting
 	/// </summary>
 	public sealed class BreakTrigger : Exception
 	{
-		public BreakTrigger() : base() { }
+		/// <summary>
+		/// 생성됨.
+		/// </summary>
+		public BreakTrigger() : base()
+		{
+		}
 	}
 }

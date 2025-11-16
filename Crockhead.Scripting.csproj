@@ -29,6 +29,7 @@
 		<OutputDir>$(MSBuildProjectDirectory)\bin\$(Configuration)\$(TargetFramework)\</OutputDir>
 		<LibraryFilePath>$(OutputDir)$(AssemblyName).dll</LibraryFilePath>
 		<DocumentFilePath>$(OutputDir)$(AssemblyName).xml</DocumentFilePath>
+		<Configurations>Debug;Release;Distribution</Configurations>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -37,7 +38,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="Crockhead.Core" Version="0.0.13" />
+	  <PackageReference Include="Crockhead.Core" Version="0.0.19" />
 	</ItemGroup>
 
 	<Target Name="RemoveAllPackages" BeforeTargets="Build;Pack">
@@ -48,10 +49,10 @@
 		<Delete Files="@(PackageFilePattern);@(SymbolPackageFilePattern)" />
 	</Target>
 
-	<Target Name="Deployment" AfterTargets="Build" Condition="'$(Configuration)'=='Release' and '$(DeployOnBuild)'=='True'">
+	<Target Name="Deployment" AfterTargets="Build" Condition="('$(Configuration)'=='Release' or '$(Configuration)'=='Distribution') and '$(DeployOnBuild)'=='True'">
 		<Exec Command="deployment.bat $(DocumentFilePath) $(LibraryFilePath)" WorkingDirectory="$(ProjectDir)" />
 	</Target>
-	<Target Name="Distribution" AfterTargets="Pack" Condition="'$(Configuration)'=='Release' and '$(DistOnPack)'=='True'">
+	<Target Name="Distribution" AfterTargets="Pack" Condition="'$(Configuration)'=='Distribution' and '$(DistOnPack)'=='True'">
 		<Exec Command="distribution.bat" WorkingDirectory="$(ProjectDir)" />
 	</Target>
 

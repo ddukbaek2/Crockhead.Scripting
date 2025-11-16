@@ -7,6 +7,11 @@ namespace Crockhead.Scripting
 	/// </summary>
 	public sealed class ContinueTrigger : Exception
 	{
-		public ContinueTrigger() : base() { }
+		/// <summary>
+		/// 
+		/// </summary>
+		public ContinueTrigger() : base()
+		{
+		}
 	}
 }
